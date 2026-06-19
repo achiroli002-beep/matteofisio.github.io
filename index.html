@@ -342,6 +342,23 @@
   }
   .metodo__spine { display: grid; place-items: center; }
   .metodo__spine svg { width: clamp(160px, 24vw, 240px); height: auto; }
+
+  /* Mobile/tablet: colonna piccola e DI LATO al testo (sticky, così resta
+     visibile mentre scorri) invece che grande e sotto al testo. */
+  @media (max-width: 880px) {
+    .metodo__inner {
+      grid-template-columns: 1fr 84px;
+      gap: 20px;
+      align-items: start;
+      min-height: auto;       /* niente 100vh: evita spazi vuoti su mobile */
+    }
+    .metodo__spine {
+      position: sticky;
+      top: 88px;              /* resta sotto la navbar fissa */
+      align-self: start;
+    }
+    .metodo__spine svg { width: 84px; }   /* colonna rimpicciolita */
+  }
   .spine-line { fill: none; stroke: var(--sage); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
   .vertebra { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
   .metodo__steps li {
@@ -1246,6 +1263,7 @@
          semplice illustrazione, raddrizzata dolcemente al passaggio. */
       const metodo = document.getElementById('metodo');
       const inner  = metodo.querySelector('.metodo__inner');
+      const spineWrap = metodo.querySelector('.metodo__spine');
 
       if (isDesktop && !reduceMotion) {
         metodo.classList.add('metodo--pinned');
@@ -1283,7 +1301,9 @@
           if (hasMorph) gsap.set(spineLine, { morphSVG: straightD }); else spineLine.setAttribute('d', straightD);
           gsap.set(vertebrae, { x: 0 });
         } else {
-          const t2 = gsap.timeline({ scrollTrigger: { trigger: metodo, start: 'top 70%', once: true } });
+          // Trigger sulla COLONNA (non sull'intera sezione): così l'animazione
+          // parte quando la colonna entra davvero in vista e si vede curva→dritta.
+          const t2 = gsap.timeline({ scrollTrigger: { trigger: spineWrap, start: 'top 80%', once: true } });
           if (hasMorph) t2.to(spineLine, { morphSVG: straightD, duration: 1.1, ease: 'power2.inOut' }, 0);
           else t2.to({ p: 0 }, { p: 1, duration: 1.1, ease: 'power2.inOut',
             onUpdate: function () { const pr = this.targets()[0].p; spineLine.setAttribute('d', smoothPath(pts.map(pt => ({ x: pt.x + (CX - pt.x) * pr, y: pt.y })))); } }, 0);
