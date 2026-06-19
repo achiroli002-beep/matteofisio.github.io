@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  Studio Fisioterapico — Landing page single-page, 100% statica.
+  File UNICO e autosufficiente (HTML + CSS interno + JS interno).
+  Caricabile così com'è su GitHub Pages. Nessun build step.
+  Documentazione e punti di personalizzazione: vedi claude.md
+  =====================================================================
+-->
+<html lang="it" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Aggiunge subito la classe .js così il CSS può nascondere gli elementi
+       da animare PRIMA del primo paint (niente flash). Se il JS è disattivato
+       o GSAP non si carica, gli elementi restano visibili (fallback sicuro). -->
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+
+  <!-- ============================ SEO / SOCIAL ============================ -->
+  <title>Studio Fisioterapico [Nome] — Fisioterapia e riabilitazione | [Città]</title>
+  <meta name="description" content="Fisioterapia, riabilitazione e terapia del dolore a [Città]. Riconquista il tuo movimento con un percorso personalizzato. Prenota una valutazione.">
+  <meta name="theme-color" content="#2E7D6B">
+  <link rel="canonical" href="https://matteofisio.github.io/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="Studio Fisioterapico [Nome] — Fisioterapia e riabilitazione">
+  <meta property="og:description" content="Riconquista il tuo movimento. Percorsi di fisioterapia e riabilitazione personalizzati a [Città].">
+  <meta property="og:url" content="https://matteofisio.github.io/">
+  <meta property="og:image" content="https://matteofisio.github.io/og-image.jpg"><!-- TODO: sostituisci con una vera immagine 1200x630 -->
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Studio Fisioterapico [Nome]">
+  <meta name="twitter:description" content="Riconquista il tuo movimento. Fisioterapia e riabilitazione a [Città].">
+
+  <!-- Favicon inline (croce medica) — nessun file esterno -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232E7D6B'/><rect x='13.5' y='7' width='5' height='18' rx='2.5' fill='%23ffffff'/><rect x='7' y='13.5' width='18' height='5' rx='2.5' fill='%23ffffff'/></svg>">
+
+  <!-- Google Fonts: Poppins (titoli) + Inter (testo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP + plugin (oggi gratuiti) via jsDelivr, con defer per le performance -->
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/MorphSVGPlugin.min.js"></script>
+
+  <!-- ============================ JSON-LD SEO locale ============================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Physiotherapy",
+    "name": "Studio Fisioterapico [Nome]",
+    "image": "https://matteofisio.github.io/og-image.jpg",
+    "url": "https://matteofisio.github.io/",
+    "telephone": "+39 000 0000000",
+    "email": "info@esempio.it",
+    "priceRange": "€€",
+    "medicalSpecialty": "Physiotherapy",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Via Esempio 1",
+      "addressLocality": "[Città]",
+      "postalCode": "00000",
+      "addressCountry": "IT"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "45.4642",
+      "longitude": "9.1900"
+    },
+    "openingHoursSpecification": [{
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "opens": "09:00",
+      "closes": "19:00"
+    }]
+  }
+  </script>
+
+  <style>
+  /* =====================================================================
+     1. DESIGN TOKENS — modifica qui colori, font e spaziature
+     ===================================================================== */
+  :root {
+    /* Palette (medicale, rassicurante). Cambia qui per ri-temizzare tutto. */
+    --bg:            #FFFFFF;
+    --bg-alt:        #F6F8F7;
+    --surface:       #FFFFFF;
+    --text:          #1F2A2E;
+    --text-muted:    #4F5E62;   /* contrasto AA su bianco */
+    --accent:        #2E7D6B;   /* CTA principale (AA con testo bianco) */
+    --accent-hover:  #256655;
+    --sage:          #6FAE9B;   /* accento brand chiaro / decori */
+    --sage-soft:     #E5F0EC;   /* superfici tenui / highlight */
+    --blue:          #2F6F8F;   /* accento alternativo / focus ring */
+    --danger:        #C0392B;   /* marker manichino */
+    --border:        #DCE5E2;
+    --shadow-sm:     0 1px 3px rgba(31,42,46,.06), 0 1px 2px rgba(31,42,46,.04);
+    --shadow-md:     0 8px 30px rgba(31,42,46,.08);
+    --shadow-lg:     0 18px 50px rgba(31,42,46,.12);
+
+    /* Tipografia */
+    --font-head: 'Poppins', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+
+    /* Forme & ritmo */
+    --radius:    18px;
+    --radius-sm: 12px;
+    --radius-lg: 28px;
+    --container: 1200px;
+    --gutter:    clamp(20px, 5vw, 64px);
+    --section-y: clamp(64px, 9vw, 130px);
+  }
+
+  /* =====================================================================
+     2. RESET & BASE
+     ===================================================================== */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: clamp(16px, 1.1vw, 17px);
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-head); line-height: 1.15; margin: 0 0 .5em; color: var(--text); }
+  h1 { font-size: clamp(2.1rem, 5.4vw, 3.9rem); font-weight: 700; letter-spacing: -.02em; }
+  h2 { font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 600; letter-spacing: -.015em; }
+  h3 { font-size: clamp(1.15rem, 1.8vw, 1.4rem); font-weight: 600; }
+  p  { margin: 0 0 1rem; color: var(--text-muted); }
+  a  { color: var(--accent); text-decoration: none; }
+  img, svg { max-width: 100%; display: block; }
+  ul { margin: 0; padding: 0; list-style: none; }
+
+  /* Accessibilità: focus SEMPRE visibile */
+  :focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  /* Skip link */
+  .skip-link {
+    position: absolute; left: 12px; top: -60px; z-index: 1000;
+    background: var(--accent); color: #fff; padding: 10px 16px;
+    border-radius: var(--radius-sm); transition: top .2s ease; font-weight: 600;
+  }
+  .skip-link:focus { top: 12px; }
+
+  /* Layout helpers */
+  .container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+  .section--alt { background: var(--bg-alt); }
+  .eyebrow {
+    display: inline-block; font-family: var(--font-head); font-weight: 600;
+    font-size: .82rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: .6rem;
+  }
+  .section__lead { max-width: 60ch; font-size: 1.05rem; }
+  .text-center { text-align: center; }
+  .mx-auto { margin-inline: auto; }
+
+  /* =====================================================================
+     3. BOTTONI & CARD (stati coerenti hover/focus)
+     ===================================================================== */
+  .btn {
+    --btn-bg: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+    font-family: var(--font-head); font-weight: 600; font-size: 1rem;
+    padding: .85em 1.6em; border-radius: 999px; border: 2px solid transparent;
+    background: var(--btn-bg); color: #fff; cursor: pointer;
+    transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
+    box-shadow: var(--shadow-sm); text-align: center;
+  }
+  .btn:hover { background: var(--accent-hover); box-shadow: var(--shadow-md); }
+  .btn:active { transform: translateY(1px); }
+  .btn--ghost {
+    background: transparent; color: var(--accent); border-color: var(--accent);
+  }
+  .btn--ghost:hover { background: var(--sage-soft); color: var(--accent-hover); }
+  .btn--lg { padding: 1.05em 2em; font-size: 1.08rem; }
+  .btn[disabled] { opacity: .6; cursor: progress; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: clamp(20px, 3vw, 32px);
+    box-shadow: var(--shadow-sm); transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+  /* =====================================================================
+     4. CURSORE PERSONALIZZATO (l'osso) — solo desktop puntatore fine
+        (display gestito da media query in fondo + guardie JS)
+     ===================================================================== */
+  .cursor {
+    position: fixed; left: 0; top: 0; width: 46px; height: 26px;
+    margin-left: -23px; margin-top: -13px;
+    pointer-events: none; z-index: 9999; opacity: 0;
+    transition: opacity .25s ease; will-change: transform; display: none;
+  }
+  .cursor.is-visible { opacity: 1; }
+  .cursor__svg {
+    display: block; color: var(--accent);
+    transition: transform .2s ease, color .2s ease;
+    filter: drop-shadow(0 0 2px rgba(255,255,255,.9));
+  }
+  .cursor.is-active .cursor__svg { transform: scale(1.8); color: var(--sage); }
+
+  /* =====================================================================
+     5. HEADER / NAV
+     ===================================================================== */
+  .site-header {
+    position: fixed; inset: 0 0 auto 0; z-index: 900;
+    transition: background .35s ease, box-shadow .35s ease, backdrop-filter .35s ease;
+  }
+  .site-header.scrolled {
+    background: rgba(255,255,255,.85);
+    backdrop-filter: saturate(140%) blur(12px);
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding-block: 14px;
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; color: var(--text);
+  }
+  .brand__mark {
+    width: 34px; height: 34px; border-radius: 9px; background: var(--accent);
+    display: grid; place-items: center; color: #fff; flex: 0 0 auto;
+  }
+  .nav__links { display: flex; align-items: center; gap: 26px; }
+  .nav__links a {
+    color: var(--text); font-weight: 500; position: relative; padding: 4px 0;
+  }
+  .nav__links a::after {
+    content: ""; position: absolute; left: 0; bottom: -2px; height: 2px; width: 0;
+    background: var(--accent); transition: width .25s ease;
+  }
+  .nav__links a:hover::after, .nav__links a:focus-visible::after { width: 100%; }
+  .nav__cta { margin-left: 8px; }
+
+  /* Hamburger */
+  .nav__toggle {
+    display: none; width: 46px; height: 46px; border: 1px solid var(--border);
+    border-radius: 12px; background: var(--surface); cursor: pointer; padding: 0;
+    align-items: center; justify-content: center;
+  }
+  .nav__toggle span, .nav__toggle span::before, .nav__toggle span::after {
+    content: ""; display: block; width: 22px; height: 2px; background: var(--text);
+    border-radius: 2px; transition: transform .3s ease, opacity .3s ease;
+  }
+  .nav__toggle span { position: relative; }
+  .nav__toggle span::before { position: absolute; top: -7px; left: 0; }
+  .nav__toggle span::after  { position: absolute; top: 7px;  left: 0; }
+  .nav__toggle[aria-expanded="true"] span { background: transparent; }
+  .nav__toggle[aria-expanded="true"] span::before { transform: translateY(7px) rotate(45deg); }
+  .nav__toggle[aria-expanded="true"] span::after  { transform: translateY(-7px) rotate(-45deg); }
+
+  /* =====================================================================
+     6. HERO
+     ===================================================================== */
+  .hero { position: relative; padding-top: clamp(120px, 16vw, 180px); padding-bottom: var(--section-y); overflow: hidden; }
+  .hero::before { /* decoro morbido sullo sfondo */
+    content: ""; position: absolute; right: -10%; top: -10%; width: 60vw; height: 60vw;
+    max-width: 760px; max-height: 760px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--sage-soft), transparent 70%);
+    z-index: -1;
+  }
+  .hero__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: center; }
+  .hero__title span { display: block; }
+  .hero__sub { font-size: 1.15rem; max-width: 52ch; }
+  .hero__cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+  .hero__media { position: relative; }
+  .hero__media img {
+    width: 100%; height: auto; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); object-fit: cover; aspect-ratio: 4 / 5;
+  }
+  .hero__badge {
+    position: absolute; left: -8px; bottom: 22px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 18px; box-shadow: var(--shadow-md); display: flex; gap: 12px; align-items: center;
+    max-width: 240px;
+  }
+  .hero__badge strong { font-family: var(--font-head); }
+  .hero__badge .dot { width: 40px; height: 40px; border-radius: 12px; background: var(--sage-soft); color: var(--accent); display: grid; place-items: center; flex: 0 0 auto; }
+
+  /* =====================================================================
+     7. "COSA TRATTO" — anatomia interattiva
+     ===================================================================== */
+  .anatomy__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: center; }
+  .anatomy__figure { position: relative; display: grid; place-items: center; }
+  .anatomy__figure svg { width: min(360px, 80%); height: auto; }
+  .body-base { fill: var(--sage-soft); stroke: var(--border); stroke-width: 1.5; }
+  .region { cursor: pointer; outline: none; }
+  .region .hot {
+    fill: var(--sage); opacity: .14;
+    transition: opacity .3s ease, filter .3s ease;
+  }
+  .region:hover .hot,
+  .region:focus-visible .hot,
+  .region.is-active .hot {
+    opacity: .6; filter: drop-shadow(0 0 7px var(--sage));
+  }
+  .region:focus-visible { outline: none; }
+  .region:focus-visible .hot { stroke: var(--blue); stroke-width: 2; }
+
+  .anatomy__panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: clamp(22px, 3vw, 34px); box-shadow: var(--shadow-sm);
+    min-height: 260px;
+  }
+  .anatomy__panel h3 { display: flex; align-items: center; gap: 10px; }
+  .anatomy__panel .tag {
+    font-family: var(--font-head); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+    background: var(--sage-soft); color: var(--accent); padding: 4px 10px; border-radius: 999px;
+  }
+  .cond-list li {
+    display: flex; gap: 10px; align-items: flex-start; padding: 9px 0;
+    border-bottom: 1px dashed var(--border); color: var(--text);
+  }
+  .cond-list li:last-child { border-bottom: 0; }
+  .cond-list li::before { content: "✓"; color: var(--accent); font-weight: 700; }
+  .anatomy__hint { font-size: .9rem; color: var(--text-muted); margin-top: 6px; }
+
+  /* =====================================================================
+     8. "IL METODO" — scrollytelling colonna
+     ===================================================================== */
+  .metodo { position: relative; }
+  .metodo--pinned { min-height: 200vh; }     /* abilitato via JS solo su desktop */
+  .metodo__inner {
+    display: grid; gap: clamp(28px, 5vw, 56px); align-items: center;
+    min-height: 100vh; padding-block: 40px;
+  }
+  .metodo__spine { display: grid; place-items: center; }
+  .metodo__spine svg { width: clamp(160px, 24vw, 240px); height: auto; }
+  .spine-line { fill: none; stroke: var(--sage); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  .vertebra { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
+  .metodo__steps li {
+    padding: 16px 0 16px 56px; position: relative; border-bottom: 1px solid var(--border);
+  }
+  .metodo__steps li:last-child { border-bottom: 0; }
+  .metodo__steps .num {
+    position: absolute; left: 0; top: 16px; width: 38px; height: 38px; border-radius: 50%;
+    background: var(--accent); color: #fff; display: grid; place-items: center;
+    font-family: var(--font-head); font-weight: 600;
+  }
+  .metodo__steps h3 { margin-bottom: .2em; }
+
+  /* =====================================================================
+     9. "LASCIA CHE TI AIUTI" — manichino diagnostico
+     ===================================================================== */
+  .diag__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: start; }
+  .diag__figure { position: relative; display: grid; place-items: center; background: var(--bg-alt); border-radius: var(--radius); padding: 20px; }
+  .diag__figure svg { width: min(300px, 80%); height: auto; }
+  .zone { cursor: pointer; }
+  .zone .hot { fill: var(--blue); opacity: .12; transition: opacity .25s ease; }
+  .zone:hover .hot, .zone:focus-visible .hot, .zone.is-selected .hot { opacity: .45; }
+  .zone:focus-visible .hot { stroke: var(--blue); stroke-width: 2; }
+  #diagMarker { fill: var(--danger); stroke: #fff; stroke-width: 2.5; opacity: 0; transition: opacity .2s ease; }
+  #diagMarker.show { opacity: 1; }
+  .marker-pulse { transform-box: fill-box; transform-origin: center; animation: pulse 1.6s ease-out infinite; }
+  @keyframes pulse { 0% { r: 9; opacity: 1; } 70% { r: 20; opacity: 0; } 100% { opacity: 0; } }
+
+  /* Form */
+  .form { display: grid; gap: 16px; }
+  .field { display: grid; gap: 6px; }
+  .field label { font-weight: 500; font-size: .95rem; }
+  .field input, .field select, .field textarea {
+    font-family: var(--font-body); font-size: 1rem; color: var(--text);
+    padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); width: 100%; transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(46,125,107,.18);
+  }
+  .field textarea { resize: vertical; min-height: 110px; }
+  .field--row { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  .selected-zone { font-size: .92rem; color: var(--text-muted); }
+  .selected-zone strong { color: var(--accent); }
+  /* Honeypot anti-spam: nascosto a utenti e screen reader */
+  .hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+
+  /* Messaggio di successo */
+  .form-success {
+    display: none; align-items: center; gap: 14px; padding: 18px 20px;
+    background: var(--sage-soft); border: 1px solid var(--sage); border-radius: var(--radius);
+    color: var(--text);
+  }
+  .form-success.show { display: flex; }
+  .form-success .check {
+    flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; background: var(--accent);
+    color: #fff; display: grid; place-items: center; font-size: 1.2rem;
+  }
+  .form-error { color: var(--danger); font-size: .92rem; min-height: 1.2em; }
+
+  /* =====================================================================
+     10. "CHI SONO"
+     ===================================================================== */
+  .about__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: center; }
+  .about__photo {
+    width: 100%; max-width: 420px; aspect-ratio: 1; object-fit: cover;
+    border-radius: 48% 52% 60% 40% / 50% 45% 55% 50%;
+    box-shadow: var(--shadow-lg); margin-inline: auto;
+  }
+  .about__certs { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 22px; align-items: center; }
+  .about__certs img { height: 54px; width: auto; opacity: .85; filter: grayscale(.2); }
+  .about__values { display: grid; gap: 14px; margin-top: 18px; }
+  .about__values li { display: flex; gap: 12px; align-items: flex-start; color: var(--text); }
+  .about__values .ico { color: var(--accent); flex: 0 0 auto; margin-top: 2px; }
+
+  /* =====================================================================
+     11. CONTATTI + FOOTER
+     ===================================================================== */
+  .contact__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: start; }
+  .contact__info { display: grid; gap: 18px; align-content: start; }
+  .info-row { display: flex; gap: 14px; align-items: flex-start; }
+  .info-row .ico { width: 42px; height: 42px; border-radius: 12px; background: var(--sage-soft); color: var(--accent); display: grid; place-items: center; flex: 0 0 auto; }
+  .info-row a { color: var(--text); }
+  .info-row a:hover { color: var(--accent); }
+  .map-embed {
+    border: 0; width: 100%; height: 280px; border-radius: var(--radius);
+    box-shadow: var(--shadow-sm); margin-top: 4px; filter: grayscale(.1);
+  }
+
+  .site-footer { background: var(--text); color: #cdd6d4; padding-block: 56px 28px; }
+  .site-footer a { color: #cdd6d4; }
+  .site-footer a:hover { color: #fff; }
+  .footer__grid { display: grid; gap: 32px; grid-template-columns: 1fr; }
+  .footer__brand { color: #fff; }
+  .footer__social { display: flex; gap: 14px; margin-top: 14px; }
+  .footer__social a {
+    width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18);
+    display: grid; place-items: center; transition: background .2s ease, border-color .2s ease;
+  }
+  .footer__social a:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.4); }
+  .footer__bottom {
+    margin-top: 36px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.14);
+    display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between;
+    font-size: .9rem; color: #9fb0ac;
+  }
+
+  /* =====================================================================
+     12. REVEAL allo scroll (animati da GSAP). Stato iniziale nascosto
+         SOLO se JS attivo; con reduced-motion vengono mostrati subito.
+     ===================================================================== */
+  .js .reveal { opacity: 0; transform: translateY(26px); }
+  .js .reveal.is-in { opacity: 1; transform: none; }
+
+  /* =====================================================================
+     13. RESPONSIVE (mobile-first → tablet → desktop)
+     ===================================================================== */
+  @media (max-width: 880px) {
+    .nav__links {
+      position: fixed; inset: 0 0 0 auto; width: min(320px, 84vw);
+      flex-direction: column; align-items: flex-start; gap: 8px;
+      background: var(--surface); padding: 96px 28px 28px; box-shadow: var(--shadow-lg);
+      transform: translateX(100%); transition: transform .35s ease; z-index: 950;
+    }
+    .nav__links.open { transform: translateX(0); }
+    .nav__links a { font-size: 1.1rem; padding: 10px 0; width: 100%; }
+    .nav__cta { margin: 12px 0 0; }
+    .nav__toggle { display: inline-flex; z-index: 960; }
+    .nav-backdrop {
+      position: fixed; inset: 0; background: rgba(31,42,46,.4); z-index: 940;
+      opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease;
+    }
+    .nav-backdrop.show { opacity: 1; visibility: visible; }
+  }
+
+  @media (min-width: 768px) {
+    .field--row { grid-template-columns: 1fr 1fr; }
+    .footer__grid { grid-template-columns: 2fr 1fr 1fr; }
+  }
+
+  @media (min-width: 881px) {
+    .hero__grid     { grid-template-columns: 1.05fr .95fr; }
+    .anatomy__grid  { grid-template-columns: .9fr 1.1fr; }
+    .metodo__inner  { grid-template-columns: 1fr .8fr; }
+    .diag__grid     { grid-template-columns: .85fr 1.15fr; }
+    .about__grid    { grid-template-columns: .8fr 1.2fr; }
+    .contact__grid  { grid-template-columns: 1.1fr .9fr; }
+    .nav-backdrop   { display: none; }
+  }
+
+  @media (min-width: 1280px) {
+    :root { --container: 1240px; }
+  }
+
+  /* Cursore-osso & pulsanti magnetici: SOLO desktop con puntatore fine */
+  @media (hover: hover) and (pointer: fine) {
+    .cursor { display: block; }
+    body.bone-active { cursor: none; }
+    body.bone-active a,
+    body.bone-active button,
+    body.bone-active [role="button"],
+    body.bone-active label,
+    body.bone-active input,
+    body.bone-active select,
+    body.bone-active textarea { cursor: none; }
+  }
+
+  /* =====================================================================
+     14. PREFERS-REDUCED-MOTION — riduce tutto a fade/disattiva
+     ===================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+    .js .reveal { opacity: 1 !important; transform: none !important; }
+    .marker-pulse { animation: none !important; }
+    .cursor { display: none !important; }   /* niente cursore custom */
+  }
+  </style>
+</head>
+
+<body>
+  <!-- Cursore personalizzato a forma di osso (nascosto di default, attivato via JS) -->
+  <div class="cursor" aria-hidden="true">
+    <span class="cursor__svg">
+      <svg viewBox="0 0 46 26" xmlns="http://www.w3.org/2000/svg" width="46" height="26">
+        <g fill="currentColor">
+          <circle cx="8" cy="8"  r="7"/>
+          <circle cx="8" cy="18" r="7"/>
+          <circle cx="38" cy="8"  r="7"/>
+          <circle cx="38" cy="18" r="7"/>
+          <rect x="7" y="7" width="32" height="12" rx="4"/>
+        </g>
+      </svg>
+    </span>
+  </div>
+
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+
+  <!-- ============================ HEADER / NAV ============================ -->
+  <header class="site-header" id="top">
+    <div class="container">
+      <nav class="nav" aria-label="Navigazione principale">
+        <a class="brand" href="#top" aria-label="Studio Fisioterapico [Nome] — home">
+          <span class="brand__mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 32 32"><rect x="13.5" y="6" width="5" height="20" rx="2.5" fill="currentColor"/><rect x="6" y="13.5" width="20" height="5" rx="2.5" fill="currentColor"/></svg>
+          </span>
+          <span>Studio <strong>Fisio</strong></span>
+        </a>
+
+        <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Apri il menu">
+          <span></span>
+        </button>
+
+        <ul class="nav__links" id="navLinks">
+          <li><a href="#top">Home</a></li>
+          <li><a href="#trattamenti">Trattamenti</a></li>
+          <li><a href="#metodo">Metodo</a></li>
+          <li><a href="#chi-sono">Chi Sono</a></li>
+          <li><a href="#contatti">Contatti</a></li>
+          <li><a class="btn nav__cta magnetic" href="#contatti">Prenota Ora</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="nav-backdrop" id="navBackdrop" hidden></div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============================ 1) HERO ============================ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div>
+          <!-- Gli elementi dell'hero NON usano .reveal: sono gestiti dalla
+               timeline di apertura (blocco F). Niente doppia animazione. -->
+          <span class="eyebrow hero-anim">Fisioterapia &amp; Riabilitazione</span>
+          <h1 class="hero__title" id="hero-title">
+            <span class="hero-line">Riconquista il tuo</span>
+            <span class="hero-line">movimento.</span>
+            <span class="hero-line">Elimina il dolore.</span>
+          </h1>
+          <p class="hero__sub hero-anim">
+            Percorsi terapeutici personalizzati per tornare a muoverti con libertà.
+            Valutazione accurata, mani esperte, risultati misurabili.
+          </p>
+          <div class="hero__cta hero-anim">
+            <a class="btn btn--lg magnetic" href="#contatti">Prenota una valutazione</a>
+            <a class="btn btn--ghost btn--lg" href="#trattamenti">Scopri i trattamenti</a>
+          </div>
+        </div>
+
+        <div class="hero__media hero-anim">
+          <!-- TODO: sostituisci src con una foto professionale reale (es. foto/hero.jpg) -->
+          <img
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 750'%3E%3Crect width='600' height='750' fill='%23E5F0EC'/%3E%3Ccircle cx='300' cy='280' r='130' fill='%23B9D8CE'/%3E%3Crect x='140' y='430' width='320' height='280' rx='130' fill='%23B9D8CE'/%3E%3Ctext x='300' y='715' font-family='sans-serif' font-size='30' fill='%235C9684' text-anchor='middle'%3EFoto professionale%3C/text%3E%3C/svg%3E"
+            alt="Ritratto del fisioterapista nello studio"
+            width="600" height="750" loading="eager">
+          <div class="hero__badge">
+            <span class="dot" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </span>
+            <span><strong>+1.000</strong><br>pazienti trattati</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 2) COSA TRATTO (anatomia) ============================ -->
+    <section class="section section--alt" id="trattamenti" aria-labelledby="anatomy-title">
+      <div class="container">
+        <header class="text-center reveal" style="max-width:60ch;margin-inline:auto;">
+          <span class="eyebrow">Cosa tratto</span>
+          <h2 id="anatomy-title">Dove senti dolore?</h2>
+          <p class="section__lead mx-auto">Passa il mouse, tocca o seleziona da tastiera un'area del corpo per scoprire le condizioni che tratto in quella zona.</p>
+        </header>
+
+        <div class="anatomy__grid" style="margin-top:40px;">
+          <!-- SVG corpo umano (vista frontale) con aree interattive -->
+          <div class="anatomy__figure reveal">
+            <svg viewBox="0 0 220 480" role="group" aria-labelledby="anatomy-title" aria-describedby="anatomy-hint">
+              <!-- Silhouette di base (decorativa) -->
+              <g class="body-base" aria-hidden="true">
+                <circle cx="110" cy="42" r="28"/>
+                <rect x="96" y="66" width="28" height="26" rx="10"/>
+                <path d="M58 104 Q110 84 162 104 L172 210 Q150 230 150 250 L70 250 Q70 230 48 210 Z"/>
+                <rect x="46" y="104" width="20" height="120" rx="10"/>
+                <rect x="154" y="104" width="20" height="120" rx="10"/>
+                <path d="M74 248 L104 248 L100 380 L92 470 L74 470 L70 360 Z"/>
+                <path d="M146 248 L116 248 L120 380 L128 470 L146 470 L150 360 Z"/>
+              </g>
+
+              <!-- Aree interattive: id = chiave dei dati. role=button + tabindex per la tastiera -->
+              <g class="region" id="testa"     tabindex="0" role="button" aria-label="Testa"><circle class="hot" cx="110" cy="42" r="30"/></g>
+              <g class="region" id="collo"     tabindex="0" role="button" aria-label="Collo"><rect class="hot" x="92" y="64" width="36" height="30" rx="12"/></g>
+              <g class="region" id="spalle"    tabindex="0" role="button" aria-label="Spalle"><path class="hot" d="M52 100 Q110 80 168 100 L168 126 Q110 110 52 126 Z"/></g>
+              <g class="region" id="schiena"   tabindex="0" role="button" aria-label="Schiena e torace"><rect class="hot" x="70" y="128" width="80" height="56" rx="14"/></g>
+              <g class="region" id="lombare"   tabindex="0" role="button" aria-label="Zona lombare"><rect class="hot" x="74" y="188" width="72" height="58" rx="14"/></g>
+              <g class="region" id="ginocchia" tabindex="0" role="button" aria-label="Ginocchia"><path class="hot" d="M80 352 h26 v34 h-26 z M114 352 h26 v34 h-26 z"/></g>
+              <g class="region" id="caviglie"  tabindex="0" role="button" aria-label="Caviglie"><path class="hot" d="M76 446 h22 v30 h-22 z M122 446 h22 v30 h-22 z"/></g>
+            </svg>
+            <p class="anatomy__hint" id="anatomy-hint">Suggerimento: usa Tab per spostarti tra le aree e Invio per selezionarle.</p>
+          </div>
+
+          <!-- Pannello informativo (aggiornato dal JS) -->
+          <div class="anatomy__panel reveal" id="anatomyPanel" aria-live="polite">
+            <!-- Contenuto iniziale, sovrascritto da JS -->
+            <h3><span class="tag">Area</span> Seleziona una zona</h3>
+            <p>Le condizioni trattate compariranno qui non appena scegli un'area del corpo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 3) IL METODO (scrollytelling colonna) ============================ -->
+    <section class="metodo section" id="metodo" aria-labelledby="metodo-title">
+      <div class="container metodo__inner">
+        <div>
+          <span class="eyebrow reveal">Il metodo</span>
+          <h2 id="metodo-title" class="reveal">Dalla rigidità all'allineamento</h2>
+          <p class="section__lead reveal">La mia filosofia: non inseguo il sintomo, riallineo il sistema. Ogni percorso segue tre fasi precise — come una colonna che, passo dopo passo, ritrova il suo asse naturale.</p>
+          <ul class="metodo__steps">
+            <li class="reveal"><span class="num">1</span><h3>Valutazione</h3><p>Analisi posturale e funzionale per individuare la vera origine del dolore, non solo dove lo senti.</p></li>
+            <li class="reveal"><span class="num">2</span><h3>Trattamento</h3><p>Terapia manuale, esercizio terapeutico e tecniche mirate, dosate sulla tua risposta reale.</p></li>
+            <li class="reveal"><span class="num">3</span><h3>Autonomia</h3><p>Ti insegno a mantenere i risultati: un corpo che si regge da solo, senza dipendere dallo studio.</p></li>
+          </ul>
+        </div>
+
+        <!-- Colonna vertebrale: parte curva e si raddrizza con lo scroll (desktop) -->
+        <div class="metodo__spine reveal" aria-hidden="true">
+          <svg id="spineSvg" viewBox="0 0 240 620" preserveAspectRatio="xMidYMid meet">
+            <path id="spineLine" class="spine-line"></path>
+            <g id="spineVertebrae"></g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 4) LASCIA CHE TI AIUTI (manichino diagnostico) ============================ -->
+    <section class="section section--alt" id="aiuto" aria-labelledby="diag-title">
+      <div class="container">
+        <header class="text-center reveal" style="max-width:62ch;margin-inline:auto;">
+          <span class="eyebrow">Lascia che ti aiuti</span>
+          <h2 id="diag-title">Indicami dove fa male</h2>
+          <p class="section__lead mx-auto">Clicca (o seleziona da tastiera) il punto del corpo dove avverti dolore: lo aggiungo automaticamente alla tua richiesta. In alternativa scegli la zona dal menu.</p>
+        </header>
+
+        <div class="diag__grid" style="margin-top:40px;">
+          <!-- Manichino cliccabile -->
+          <div class="diag__figure reveal">
+            <svg id="diagSvg" viewBox="0 0 220 480" role="group" aria-label="Seleziona sul corpo la zona dolorante">
+              <g class="body-base" aria-hidden="true">
+                <circle cx="110" cy="42" r="28"/>
+                <rect x="96" y="66" width="28" height="26" rx="10"/>
+                <path d="M58 104 Q110 84 162 104 L172 210 Q150 230 150 250 L70 250 Q70 230 48 210 Z"/>
+                <rect x="46" y="104" width="20" height="120" rx="10"/>
+                <rect x="154" y="104" width="20" height="120" rx="10"/>
+                <path d="M74 248 L104 248 L100 380 L92 470 L74 470 L70 360 Z"/>
+                <path d="M146 248 L116 248 L120 380 L128 470 L146 470 L150 360 Z"/>
+              </g>
+
+              <!-- Zone selezionabili: data-value (machine) + data-label (umano) -->
+              <g class="zone" tabindex="0" role="button" data-value="collo" data-label="Collo" aria-label="Collo"><rect class="hot" x="92" y="64" width="36" height="30" rx="12"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="spalla-destra" data-label="Spalla Destra" aria-label="Spalla destra"><circle class="hot" cx="60" cy="112" r="18"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="spalla-sinistra" data-label="Spalla Sinistra" aria-label="Spalla sinistra"><circle class="hot" cx="160" cy="112" r="18"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="schiena" data-label="Schiena" aria-label="Schiena"><rect class="hot" x="74" y="130" width="72" height="52" rx="14"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="lombare" data-label="Zona Lombare" aria-label="Zona lombare"><rect class="hot" x="76" y="188" width="68" height="56" rx="14"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="ginocchio-destro" data-label="Ginocchio Destro" aria-label="Ginocchio destro"><rect class="hot" x="80" y="352" width="26" height="34" rx="8"/></g>
+              <g class="zone" tabindex="0" role="button" data-value="ginocchio-sinistro" data-label="Ginocchio Sinistro" aria-label="Ginocchio sinistro"><rect class="hot" x="114" y="352" width="26" height="34" rx="8"/></g>
+
+              <!-- Marker rosso posizionato dal JS -->
+              <circle id="diagMarker" cx="0" cy="0" r="9"></circle>
+            </svg>
+          </div>
+
+          <!-- Form richiesta specialistica -->
+          <div class="reveal">
+            <!-- TODO Formspree: sostituisci TUO_ID con il tuo endpoint -->
+            <form class="form" id="diagForm" action="https://formspree.io/f/TUO_ID" method="POST" novalidate>
+              <div class="field--row">
+                <div class="field">
+                  <label for="diag-nome">Nome</label>
+                  <input id="diag-nome" name="nome" type="text" autocomplete="name" required>
+                </div>
+                <div class="field">
+                  <label for="diag-email">Email</label>
+                  <input id="diag-email" name="email" type="email" autocomplete="email" required>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="zonaSelect">Zona dolorante</label>
+                <select id="zonaSelect" name="zona">
+                  <option value="">— Seleziona o clicca sul corpo —</option>
+                  <option value="collo">Collo</option>
+                  <option value="spalla-destra">Spalla Destra</option>
+                  <option value="spalla-sinistra">Spalla Sinistra</option>
+                  <option value="schiena">Schiena</option>
+                  <option value="lombare">Zona Lombare</option>
+                  <option value="ginocchio-destro">Ginocchio Destro</option>
+                  <option value="ginocchio-sinistro">Ginocchio Sinistro</option>
+                </select>
+                <p class="selected-zone" id="zonaReadout">Nessuna zona selezionata.</p>
+              </div>
+
+              <!-- Campo hidden popolato dal JS quando si clicca il manichino -->
+              <input type="hidden" id="zonaHidden" name="zona_dettaglio" value="">
+
+              <div class="field">
+                <label for="diag-dolore">Descrivi il dolore</label>
+                <textarea id="diag-dolore" name="descrizione" placeholder="Da quanto tempo? Quando peggiora? Hai già fatto esami?" required></textarea>
+              </div>
+
+              <!-- Honeypot anti-spam -->
+              <div class="hp" aria-hidden="true">
+                <label>Non compilare questo campo<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+              </div>
+
+              <div class="form-error" id="diagError" role="alert"></div>
+              <button class="btn btn--lg magnetic" type="submit">Invia Richiesta Specialistica</button>
+
+              <div class="form-success" id="diagSuccess" role="status" aria-live="polite">
+                <span class="check" aria-hidden="true">✓</span>
+                <span><strong>Richiesta inviata!</strong> Ti ricontatto entro 24 ore per fissare la valutazione.</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 5) CHI SONO ============================ -->
+    <section class="section" id="chi-sono" aria-labelledby="about-title">
+      <div class="container about__grid">
+        <div class="reveal">
+          <!-- TODO: sostituisci src con la foto reale -->
+          <img class="about__photo"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' fill='%23E5F0EC'/%3E%3Ccircle cx='300' cy='250' r='120' fill='%23B9D8CE'/%3E%3Crect x='150' y='380' width='300' height='240' rx='120' fill='%23B9D8CE'/%3E%3Ctext x='300' y='560' font-family='sans-serif' font-size='28' fill='%235C9684' text-anchor='middle'%3EFoto ritratto%3C/text%3E%3C/svg%3E"
+            alt="Foto ritratto del fisioterapista" width="600" height="600" loading="lazy">
+        </div>
+        <div>
+          <span class="eyebrow reveal">Chi sono</span>
+          <h2 id="about-title" class="reveal">Dott. [Nome Cognome]</h2>
+          <p class="reveal">Fisioterapista con [X] anni di esperienza in riabilitazione ortopedica e sportiva. Credo in un approccio che mette la persona — non solo il sintomo — al centro: ascolto, valuto e costruisco con te un percorso sostenibile.</p>
+          <ul class="about__values">
+            <li class="reveal"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><strong>Ascolto reale.</strong> Una prima visita senza fretta, per capire la tua storia.</span></li>
+            <li class="reveal"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><strong>Evidenze scientifiche.</strong> Tecniche aggiornate e basate sui dati.</span></li>
+            <li class="reveal"><span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><strong>La tua autonomia.</strong> L'obiettivo è renderti indipendente dal dolore.</span></li>
+          </ul>
+          <div class="about__certs reveal" aria-label="Certificazioni e associazioni">
+            <!-- TODO: sostituisci con i loghi reali delle certificazioni -->
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 60'%3E%3Crect width='160' height='60' rx='10' fill='%23F6F8F7' stroke='%23DCE5E2'/%3E%3Ctext x='80' y='36' font-family='sans-serif' font-size='18' fill='%235C9684' text-anchor='middle'%3ECert. 1%3C/text%3E%3C/svg%3E" alt="Logo certificazione 1" loading="lazy">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 60'%3E%3Crect width='160' height='60' rx='10' fill='%23F6F8F7' stroke='%23DCE5E2'/%3E%3Ctext x='80' y='36' font-family='sans-serif' font-size='18' fill='%235C9684' text-anchor='middle'%3ECert. 2%3C/text%3E%3C/svg%3E" alt="Logo certificazione 2" loading="lazy">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 60'%3E%3Crect width='160' height='60' rx='10' fill='%23F6F8F7' stroke='%23DCE5E2'/%3E%3Ctext x='80' y='36' font-family='sans-serif' font-size='18' fill='%235C9684' text-anchor='middle'%3EAlbo TSRM%3C/text%3E%3C/svg%3E" alt="Logo iscrizione albo" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 6) CONTATTI ============================ -->
+    <section class="section section--alt" id="contatti" aria-labelledby="contact-title">
+      <div class="container">
+        <header class="text-center reveal" style="max-width:58ch;margin-inline:auto;">
+          <span class="eyebrow">Contatti</span>
+          <h2 id="contact-title">Prenota la tua valutazione</h2>
+          <p class="section__lead mx-auto">Scrivimi: ti rispondo personalmente. Oppure chiamami negli orari di studio.</p>
+        </header>
+
+        <div class="contact__grid" style="margin-top:40px;">
+          <!-- Form completo -->
+          <div class="reveal">
+            <!-- TODO Formspree: sostituisci TUO_ID con il tuo endpoint -->
+            <form class="form" id="contactForm" action="https://formspree.io/f/TUO_ID" method="POST" novalidate>
+              <div class="field--row">
+                <div class="field">
+                  <label for="c-nome">Nome e cognome</label>
+                  <input id="c-nome" name="nome" type="text" autocomplete="name" required>
+                </div>
+                <div class="field">
+                  <label for="c-tel">Telefono</label>
+                  <input id="c-tel" name="telefono" type="tel" autocomplete="tel" inputmode="tel">
+                </div>
+              </div>
+              <div class="field">
+                <label for="c-email">Email</label>
+                <input id="c-email" name="email" type="email" autocomplete="email" required>
+              </div>
+              <div class="field">
+                <label for="c-msg">Messaggio</label>
+                <textarea id="c-msg" name="messaggio" placeholder="Raccontami brevemente di cosa hai bisogno." required></textarea>
+              </div>
+
+              <!-- Honeypot anti-spam -->
+              <div class="hp" aria-hidden="true">
+                <label>Lascia vuoto<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+              </div>
+
+              <div class="form-error" id="contactError" role="alert"></div>
+              <button class="btn btn--lg magnetic" type="submit">Invia messaggio</button>
+
+              <div class="form-success" id="contactSuccess" role="status" aria-live="polite">
+                <span class="check" aria-hidden="true">✓</span>
+                <span><strong>Messaggio inviato!</strong> Ti rispondo il prima possibile.</span>
+              </div>
+            </form>
+          </div>
+
+          <!-- Info contatto + mappa -->
+          <div class="contact__info reveal">
+            <div class="info-row">
+              <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              <div><strong>Indirizzo</strong><br><a href="https://maps.google.com/?q=Via+Esempio+1+Citta" target="_blank" rel="noopener">Via Esempio 1, 00000 [Città]</a></div>
+            </div>
+            <div class="info-row">
+              <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg></span>
+              <div><strong>Telefono</strong><br><a href="tel:+390000000000">+39 000 0000000</a></div>
+            </div>
+            <div class="info-row">
+              <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></span>
+              <div><strong>Email</strong><br><a href="mailto:info@esempio.it">info@esempio.it</a></div>
+            </div>
+
+            <!-- Mappa leggera (lazy). TODO: aggiorna le coordinate/indirizzo nel parametro q -->
+            <iframe class="map-embed" title="Mappa dello studio fisioterapico" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://maps.google.com/maps?q=45.4642,9.1900&z=15&output=embed"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================ 7) FOOTER ============================ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <span class="brand footer__brand">
+            <span class="brand__mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 32 32"><rect x="13.5" y="6" width="5" height="20" rx="2.5" fill="currentColor"/><rect x="6" y="13.5" width="20" height="5" rx="2.5" fill="currentColor"/></svg></span>
+            Studio Fisio
+          </span>
+          <p style="margin-top:12px;color:#9fb0ac;max-width:34ch;">Fisioterapia e riabilitazione a [Città]. Riconquista il tuo movimento.</p>
+          <div class="footer__social">
+            <a href="#" aria-label="Instagram" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="Facebook" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2.5l.5-3H14V9.5c0-.3.2-.5.5-.5z"/></svg></a>
+            <a href="#" aria-label="LinkedIn" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 8A1.5 1.5 0 106.5 5 1.5 1.5 0 006.5 8zM5 9.5h3V19H5zM10 9.5h2.9v1.3h.04c.4-.75 1.4-1.55 2.86-1.55 3 0 3.6 2 3.6 4.5V19h-3v-4.3c0-1 0-2.3-1.4-2.3s-1.6 1.1-1.6 2.25V19h-3z"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h3 style="color:#fff;font-size:1rem;">Naviga</h3>
+          <ul style="display:grid;gap:8px;margin-top:10px;">
+            <li><a href="#trattamenti">Trattamenti</a></li>
+            <li><a href="#metodo">Il metodo</a></li>
+            <li><a href="#chi-sono">Chi sono</a></li>
+            <li><a href="#contatti">Contatti</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:#fff;font-size:1rem;">Orari</h3>
+          <ul style="display:grid;gap:8px;margin-top:10px;color:#9fb0ac;">
+            <li>Lun – Ven: 9:00 – 19:00</li>
+            <li>Sabato: su appuntamento</li>
+            <li>Domenica: chiuso</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© <span id="year"></span> Studio Fisioterapico [Nome] — P.IVA 00000000000</span>
+        <span>Realizzato con cura · <a href="#top">Torna su ↑</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       JAVASCRIPT — tutto vanilla ES6+. Commentato per blocco:
+       A) Bootstrap & fallback   B) Navbar/hamburger   C) Cursore-osso
+       D) Pulsanti magnetici     E) Reveal allo scroll  F) Hero timeline
+       G) Anatomia interattiva   H) Scrollytelling colonna
+       I) Manichino diagnostico  J) Form (Formspree + honeypot)
+       Le interazioni "motion" vivono dentro gsap.matchMedia().
+       ===================================================================== -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    'use strict';
+
+    // Anno nel footer (sempre, indipendente da GSAP)
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* -----------------------------------------------------------------
+       B) NAVBAR — hamburger accessibile (aria-expanded, Esc, click-out)
+       Vive fuori da GSAP perché deve funzionare anche senza animazioni.
+       ----------------------------------------------------------------- */
+    const header   = document.querySelector('.site-header');
+    const toggle   = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    const backdrop = document.getElementById('navBackdrop');
+
+    function setMenu(open) {
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu');
+      navLinks.classList.toggle('open', open);
+      backdrop.hidden = !open;
+      requestAnimationFrame(() => backdrop.classList.toggle('show', open));
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    toggle.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
+    backdrop.addEventListener('click', () => setMenu(false));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
+    /* -----------------------------------------------------------------
+       G) ANATOMIA INTERATTIVA — dati + pannello (funziona senza GSAP).
+       I testi sono popolati da questo oggetto: chiave = id dell'area SVG.
+       ----------------------------------------------------------------- */
+    const ANATOMIA = {
+      testa:     { titolo: 'Testa', condizioni: ['Cefalea tensiva', 'Emicrania cervicogenica', 'Disturbi dell’ATM (mandibola)'] },
+      collo:     { titolo: 'Collo', condizioni: ['Cervicalgia', 'Torcicollo', 'Colpo di frusta', 'Cefalea tensiva'] },
+      spalle:    { titolo: 'Spalle', condizioni: ['Tendinite della cuffia dei rotatori', 'Spalla congelata', 'Conflitto subacromiale'] },
+      schiena:   { titolo: 'Schiena e torace', condizioni: ['Dorsalgia', 'Rigidità toracica', 'Posture scorrette da scrivania'] },
+      lombare:   { titolo: 'Zona lombare', condizioni: ['Lombalgia', 'Ernia del disco', 'Sciatalgia', 'Lombosciatalgia'] },
+      ginocchia: { titolo: 'Ginocchia', condizioni: ['Gonartrosi', 'Tendinopatia rotulea', 'Lesioni meniscali', 'Riabilitazione post-operatoria'] },
+      caviglie:  { titolo: 'Caviglie', condizioni: ['Distorsioni', 'Instabilità cronica', 'Tendinite achillea', 'Recupero post-trauma'] }
+    };
+    const panel = document.getElementById('anatomyPanel');
+    let panelAnim = null; // riferimento per il fade GSAP (impostato più sotto se disponibile)
+
+    function renderPanel(key) {
+      const data = ANATOMIA[key];
+      if (!data) return;
+      panel.innerHTML =
+        '<h3><span class="tag">Area</span> ' + data.titolo + '</h3>' +
+        '<p>Condizioni che tratto in questa zona:</p>' +
+        '<ul class="cond-list">' + data.condizioni.map(c => '<li>' + c + '</li>').join('') + '</ul>';
+      if (typeof panelAnim === 'function') panelAnim(); // fade-in se GSAP attivo
+    }
+
+    const regions = Array.from(document.querySelectorAll('.region'));
+    function activateRegion(el) {
+      regions.forEach(r => r.classList.remove('is-active'));
+      el.classList.add('is-active');
+      renderPanel(el.id);
+    }
+    regions.forEach(el => {
+      // Mouse + touch (tap): pointerenter copre hover desktop; click copre il tap mobile
+      el.addEventListener('pointerenter', () => activateRegion(el));
+      el.addEventListener('click', () => activateRegion(el));
+      // Tastiera: focus mostra l'area, Invio/Spazio la confermano
+      el.addEventListener('focus', () => activateRegion(el));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateRegion(el); }
+      });
+    });
+
+    /* -----------------------------------------------------------------
+       I) MANICHINO DIAGNOSTICO — marker + campo hidden + select.
+       Un'unica fonte di verità: select <-> hidden <-> SVG sono sincronizzati.
+       ----------------------------------------------------------------- */
+    const diagSvg    = document.getElementById('diagSvg');
+    const marker     = document.getElementById('diagMarker');
+    const zoneEls    = Array.from(diagSvg.querySelectorAll('.zone'));
+    const zonaSelect = document.getElementById('zonaSelect');
+    const zonaHidden = document.getElementById('zonaHidden');
+    const zonaReadout= document.getElementById('zonaReadout');
+    const reduceMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function placeMarkerOnZone(zoneEl) {
+      // Centro della zona calcolato dal bounding box dell'hotspot
+      const hot = zoneEl.querySelector('.hot');
+      const bb = hot.getBBox();
+      marker.setAttribute('cx', bb.x + bb.width / 2);
+      marker.setAttribute('cy', bb.y + bb.height / 2);
+      marker.classList.add('show');
+      if (!reduceMotionMQ.matches) marker.classList.add('marker-pulse');
+    }
+    function selectZone(value, label, zoneEl) {
+      zoneEls.forEach(z => z.classList.remove('is-selected'));
+      if (zoneEl) { zoneEl.classList.add('is-selected'); placeMarkerOnZone(zoneEl); }
+      zonaSelect.value = value;
+      zonaHidden.value = label;            // <-- campo hidden popolato dal JS
+      zonaReadout.innerHTML = value ? ('Zona selezionata: <strong>' + label + '</strong>') : 'Nessuna zona selezionata.';
+    }
+    // Click/tap o tastiera sul manichino
+    zoneEls.forEach(z => {
+      const value = z.dataset.value, label = z.dataset.label;
+      z.addEventListener('click', () => selectZone(value, label, z));
+      z.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectZone(value, label, z); }
+      });
+    });
+    // Fallback accessibile: il <select> sincronizza marker + hidden
+    zonaSelect.addEventListener('change', () => {
+      const zoneEl = zoneEls.find(z => z.dataset.value === zonaSelect.value) || null;
+      const label  = zoneEl ? zoneEl.dataset.label : (zonaSelect.options[zonaSelect.selectedIndex] || {}).text || '';
+      if (!zonaSelect.value) { // reset
+        marker.classList.remove('show', 'marker-pulse');
+        zoneEls.forEach(z => z.classList.remove('is-selected'));
+        zonaHidden.value = '';
+        zonaReadout.textContent = 'Nessuna zona selezionata.';
+        return;
+      }
+      selectZone(zonaSelect.value, label, zoneEl);
+    });
+
+    /* -----------------------------------------------------------------
+       J) FORM — invio a Formspree via fetch con successo IN PAGINA,
+       validazione nativa + honeypot. Niente reload.
+       Se l'action contiene ancora "TUO_ID" si attiva la MODALITÀ DEMO
+       (mostra il successo senza inviare nulla), così la pagina è
+       provabile out-of-the-box prima di configurare Formspree.
+       ----------------------------------------------------------------- */
+    function wireForm(formId, successId, errorId) {
+      const form    = document.getElementById(formId);
+      const success = document.getElementById(successId);
+      const errorEl = document.getElementById(errorId);
+      const submitBtn = form.querySelector('[type="submit"]');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.textContent = '';
+
+        // Honeypot: se compilato è un bot → fingi successo e fermati
+        if (form.querySelector('[name="_gotcha"]').value) { return; }
+
+        // Validazione nativa del browser
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        // Modalità demo finché Formspree non è configurato
+        if (form.action.includes('TUO_ID')) {
+          console.info('[Form] Formspree non configurato (TUO_ID): mostro il successo in modalità demo.');
+          success.classList.add('show');
+          form.reset();
+          revealSuccess(success);
+          return;
+        }
+
+        // Invio reale
+        const original = submitBtn.textContent;
+        submitBtn.disabled = true; submitBtn.textContent = 'Invio in corso…';
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.ok) {
+            success.classList.add('show');
+            form.reset();
+            revealSuccess(success);
+          } else {
+            const data = await res.json().catch(() => ({}));
+            errorEl.textContent = (data.errors && data.errors[0] && data.errors[0].message)
+              || 'Invio non riuscito. Riprova o scrivimi direttamente via email.';
+          }
+        } catch (err) {
+          errorEl.textContent = 'Errore di connessione. Controlla la rete e riprova.';
+        } finally {
+          submitBtn.disabled = false; submitBtn.textContent = original;
+        }
+      });
+    }
+    // revealSuccess è ridefinita con animazione se GSAP c'è (vedi più sotto)
+    let revealSuccess = (el) => { el.scrollIntoView({ behavior: reduceMotionMQ.matches ? 'auto' : 'smooth', block: 'center' }); };
+
+    wireForm('diagForm', 'diagSuccess', 'diagError');
+    wireForm('contactForm', 'contactSuccess', 'contactError');
+
+    /* -----------------------------------------------------------------
+       H) COLONNA VERTEBRALE — generazione geometria (path + vertebre).
+       La curva e le vertebre derivano dalla STESSA formula, così il
+       morph verso la versione dritta combacia perfettamente.
+       ----------------------------------------------------------------- */
+    const spineLine = document.getElementById('spineLine');
+    const spineGroup= document.getElementById('spineVertebrae');
+    const N = 22, TOP = 40, BOTTOM = 580, CX = 120, AMP = 40;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1);
+      const y = TOP + t * (BOTTOM - TOP);
+      const x = CX + Math.sin(t * Math.PI * 1.5) * AMP; // curva tipo "scoliosi"
+      pts.push({ x, y, t });
+    }
+    // Path morbido (quadratiche tra i punti medi) — stesso schema per curvo e dritto
+    function smoothPath(points) {
+      let d = 'M ' + points[0].x.toFixed(1) + ' ' + points[0].y.toFixed(1);
+      for (let i = 1; i < points.length - 1; i++) {
+        const xc = (points[i].x + points[i + 1].x) / 2;
+        const yc = (points[i].y + points[i + 1].y) / 2;
+        d += ' Q ' + points[i].x.toFixed(1) + ' ' + points[i].y.toFixed(1) + ' ' + xc.toFixed(1) + ' ' + yc.toFixed(1);
+      }
+      const last = points[points.length - 1];
+      d += ' L ' + last.x.toFixed(1) + ' ' + last.y.toFixed(1);
+      return d;
+    }
+    const curvedD   = smoothPath(pts);
+    const straightD = smoothPath(pts.map(p => ({ x: CX, y: p.y }))); // stesso numero di comandi
+    spineLine.setAttribute('d', curvedD); // stato iniziale: curvo
+
+    // Vertebre: una ellisse per punto, traslata sull'offset della curva
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    const vertebrae = [];
+    pts.forEach((p, i) => {
+      if (i % 1 !== 0) return;
+      const v = document.createElementNS(SVGNS, 'ellipse');
+      v.setAttribute('cx', CX);
+      v.setAttribute('cy', p.y.toFixed(1));
+      v.setAttribute('rx', 13);
+      v.setAttribute('ry', 8);
+      v.setAttribute('class', 'vertebra');
+      v.dataset.offset = (p.x - CX).toFixed(2); // quanto è "storta" rispetto al centro
+      spineGroup.appendChild(v);
+      vertebrae.push(v);
+    });
+
+    /* =================================================================
+       ====================  DA QUI IN POI: GSAP  ======================
+       Se GSAP non si carica (CDN bloccata), usciamo mostrando tutto.
+       ================================================================= */
+    if (typeof window.gsap === 'undefined') {
+      console.warn('[GSAP] non disponibile: la pagina resta pienamente usabile senza animazioni.');
+      document.documentElement.classList.remove('js'); // mostra tutti gli elementi .reveal
+      // Posiziona comunque le vertebre curve come illustrazione statica
+      vertebrae.forEach(v => v.setAttribute('transform', 'translate(' + v.dataset.offset + ',0)'));
+      return;
+    }
+
+    const { gsap } = window;
+    gsap.registerPlugin(window.ScrollTrigger);
+    const hasMorph = !!window.MorphSVGPlugin;
+    if (hasMorph) gsap.registerPlugin(window.MorphSVGPlugin);
+
+    // Stato iniziale vertebre (curve) via transform GSAP
+    gsap.set(vertebrae, { x: (i, t) => parseFloat(t.dataset.offset), transformOrigin: '50% 50%' });
+
+    // A) NAVBAR opaca allo scroll — gestita da ScrollTrigger
+    window.ScrollTrigger.create({
+      start: 'top -80', end: 99999,
+      onUpdate: (self) => header.classList.toggle('scrolled', self.scroll() > 80)
+    });
+
+    // G-bis) Fade del pannello anatomia con GSAP (collegato alla funzione sopra)
+    panelAnim = () => gsap.fromTo(panel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: .4, ease: 'power2.out' });
+
+    // J-bis) Animazione di successo dei form con GSAP
+    revealSuccess = (el) => {
+      el.scrollIntoView({ behavior: reduceMotionMQ.matches ? 'auto' : 'smooth', block: 'center' });
+      if (reduceMotionMQ.matches) return;
+      gsap.fromTo(el, { scale: .9, opacity: 0 }, { scale: 1, opacity: 1, duration: .5, ease: 'back.out(1.7)' });
+    };
+
+    /* -----------------------------------------------------------------
+       gsap.matchMedia(): orchestra animazioni diverse per
+       desktop / mobile / reduced-motion e fa pulizia automatica.
+       ----------------------------------------------------------------- */
+    const mm = gsap.matchMedia();
+
+    mm.add({
+      isDesktop:   '(min-width: 881px) and (hover: hover) and (pointer: fine)',
+      isMobile:    '(max-width: 880px)',
+      reduceMotion:'(prefers-reduced-motion: reduce)'
+    }, (ctx) => {
+      const { isDesktop, reduceMotion } = ctx.conditions;
+      // Raccolgo qui TUTTE le pulizie e ne restituisco una sola alla fine:
+      // così nessun blocco fa un "return" anticipato che salterebbe i blocchi
+      // successivi (es. cursore/magnetici dopo lo scrollytelling).
+      const cleanups = [];
+
+      /* E) REVEAL allo scroll — generico per tutti gli elementi .reveal.
+         Con reduced-motion: comparsa immediata (nessun movimento). */
+      const reveals = gsap.utils.toArray('.reveal');
+      if (reduceMotion) {
+        reveals.forEach(el => el.classList.add('is-in'));
+      } else {
+        reveals.forEach((el) => {
+          gsap.fromTo(el, { y: 26, opacity: 0 }, {
+            y: 0, opacity: 1, duration: .7, ease: 'power2.out',
+            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            onComplete: () => el.classList.add('is-in')
+          });
+        });
+      }
+
+      /* F) HERO — timeline di apertura con stagger sulle righe del titolo.
+         Senza animazione (reduced-motion) il testo è già visibile. */
+      const heroLines = gsap.utils.toArray('.hero-line');
+      if (reduceMotion) {
+        gsap.set(['.hero-line', '.hero-anim'], { clearProps: 'all', opacity: 1, y: 0 });
+      } else {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        tl.from(heroLines, { yPercent: 110, opacity: 0, duration: .9, stagger: .12 })
+          .from('.hero .eyebrow', { y: 16, opacity: 0, duration: .5 }, '-=.5')
+          .from('.hero__sub',     { y: 16, opacity: 0, duration: .5 }, '-=.35')
+          .from('.hero__cta',     { y: 16, opacity: 0, duration: .5 }, '-=.3')
+          .from('.hero__media',   { scale: .96, opacity: 0, duration: .8 }, '-=.7')
+          .from('.hero__badge',   { y: 18, opacity: 0, duration: .5 }, '-=.3');
+      }
+
+      /* H-bis) SCROLLYTELLING COLONNA.
+         Desktop (no reduced-motion): sezione "pinnata" + scrub; la colonna
+         si raddrizza (MorphSVG sul tracciato + vertebre che rientrano).
+         Mobile / reduced-motion: NESSUN pin (no scroll-trap) → resta una
+         semplice illustrazione, raddrizzata dolcemente al passaggio. */
+      const metodo = document.getElementById('metodo');
+      const inner  = metodo.querySelector('.metodo__inner');
+
+      if (isDesktop && !reduceMotion) {
+        metodo.classList.add('metodo--pinned');
+        const spineTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: metodo,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1,
+            pin: inner,
+            anticipatePin: 1
+          }
+        });
+        // Tracciato: morph curvo → dritto (se il plugin è presente)
+        if (hasMorph) {
+          spineTl.to(spineLine, { morphSVG: straightD, ease: 'none' }, 0);
+        } else {
+          // Fallback senza MorphSVG: interpolo manualmente il path
+          const proxy = { p: 0 };
+          spineTl.to(proxy, {
+            p: 1, ease: 'none',
+            onUpdate: () => {
+              const d = pts.map((pt) => ({ x: pt.x + (CX - pt.x) * proxy.p, y: pt.y }));
+              spineLine.setAttribute('d', smoothPath(d));
+            }
+          }, 0);
+        }
+        // Vertebre: rientrano sull'asse con un leggero stagger
+        spineTl.to(vertebrae, { x: 0, ease: 'none', stagger: { each: .015 } }, 0);
+        // Cleanup quando la media query cambia (tolgo il pin → niente scroll-trap)
+        cleanups.push(() => { metodo.classList.remove('metodo--pinned'); });
+      } else {
+        // Versione non bloccante: raddrizzo la colonna con un semplice reveal
+        if (reduceMotion) {
+          if (hasMorph) gsap.set(spineLine, { morphSVG: straightD }); else spineLine.setAttribute('d', straightD);
+          gsap.set(vertebrae, { x: 0 });
+        } else {
+          const t2 = gsap.timeline({ scrollTrigger: { trigger: metodo, start: 'top 70%', once: true } });
+          if (hasMorph) t2.to(spineLine, { morphSVG: straightD, duration: 1.1, ease: 'power2.inOut' }, 0);
+          else t2.to({ p: 0 }, { p: 1, duration: 1.1, ease: 'power2.inOut',
+            onUpdate: function () { const pr = this.targets()[0].p; spineLine.setAttribute('d', smoothPath(pts.map(pt => ({ x: pt.x + (CX - pt.x) * pr, y: pt.y })))); } }, 0);
+          t2.to(vertebrae, { x: 0, duration: 1.1, ease: 'power2.inOut', stagger: { each: .02 } }, 0);
+        }
+      }
+
+      /* ============================================================
+         C) CURSORE-OSSO + D) PULSANTI MAGNETICI — SOLO desktop fine
+         e SOLO senza reduced-motion.
+         ============================================================ */
+      if (isDesktop && !reduceMotion) {
+        // ---------- C) Cursore personalizzato (osso) con lerp su rAF ----------
+        const cursor = document.querySelector('.cursor');
+        document.body.classList.add('bone-active');   // nasconde il cursore di sistema
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let curX = mouseX, curY = mouseY;
+        let visible = false;
+
+        window.addEventListener('mousemove', (e) => {
+          mouseX = e.clientX; mouseY = e.clientY;
+          if (!visible) { visible = true; cursor.classList.add('is-visible'); }
+        });
+        // Loop di interpolazione lineare (movimento fluido, non scattoso)
+        gsap.ticker.add(() => {
+          curX += (mouseX - curX) * 0.18;
+          curY += (mouseY - curY) * 0.18;
+          cursor.style.transform = 'translate3d(' + curX + 'px,' + curY + 'px,0)';
+        });
+        // Stato "attivo" su elementi interattivi (ingrandimento + colore)
+        const interactiveSel = 'a, button, [role="button"], input, select, textarea, label, .region, .zone';
+        document.addEventListener('mouseover', (e) => { if (e.target.closest(interactiveSel)) cursor.classList.add('is-active'); });
+        document.addEventListener('mouseout',  (e) => { if (e.target.closest(interactiveSel)) cursor.classList.remove('is-active'); });
+
+        // ---------- D) Pulsanti magnetici ----------
+        const magnets = gsap.utils.toArray('.magnetic');
+        magnets.forEach((el) => {
+          const strength = 0.4;
+          el.addEventListener('mousemove', (e) => {
+            const r = el.getBoundingClientRect();
+            const relX = e.clientX - (r.left + r.width / 2);
+            const relY = e.clientY - (r.top + r.height / 2);
+            gsap.to(el, { x: relX * strength, y: relY * strength, duration: .4, ease: 'power3.out' });
+          });
+          el.addEventListener('mouseleave', () => {
+            gsap.to(el, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1, 0.4)' });
+          });
+        });
+
+        // Cleanup: alla disattivazione della media query rimuovo gli effetti
+        cleanups.push(() => {
+          document.body.classList.remove('bone-active');
+          cursor.classList.remove('is-visible', 'is-active');
+          gsap.set(magnets, { x: 0, y: 0 });
+        });
+      }
+
+      // Un'unica funzione di cleanup per l'intero contesto matchMedia
+      return () => cleanups.forEach((fn) => fn());
+    });
+
+    // Ricalcola le posizioni quando tutto è pronto (immagini/iframe)
+    window.addEventListener('load', () => window.ScrollTrigger && window.ScrollTrigger.refresh());
+  });
+  </script>
+</body>
+</html>

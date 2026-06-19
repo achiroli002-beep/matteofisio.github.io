@@ -1,0 +1,5 @@
+# Helper locali di Claude Code (anteprima/dev) — non necessari al sito
+.claude/
+
+# Sistema
+.DS_Store
