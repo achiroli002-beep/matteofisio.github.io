@@ -144,9 +144,12 @@ etichettati con lettere nei commenti:
 - **F) Hero timeline** → `gsap.timeline()` con `stagger` sulle righe `.hero-line`.
 - **G) Anatomia interattiva** → oggetto `ANATOMIA`, funzioni `renderPanel()` /
   `activateRegion()`; fade del pannello con GSAP (`panelAnim`).
-- **H) Scrollytelling colonna** → geometria generata da `smoothPath()` (`curvedD` /
-  `straightD`); timeline con `pin` + `scrub` su `#metodo`; **MorphSVGPlugin** morfa il
-  tracciato `#spineLine` e le vertebre rientrano sull'asse (`x → 0`).
+- **H) Scrollytelling colonna** → `buildSpine()` genera tracciato + vertebre (con
+  `smoothPath()`, `curvedD`/`straightD`) a misura: grande su desktop, sottile e alta
+  quanto il testo su mobile (viewBox in px → niente deformazione). La funzione
+  `straighten()` aggiunge a una timeline **scrub** il morph di `#spineLine`
+  (**MorphSVGPlugin**) e il rientro delle vertebre (`x → 0`). Desktop: `pin` sulla
+  sezione; mobile: scrub senza pin (reversibile).
 - **I) Manichino diagnostico** → `selectZone()` / `placeMarkerOnZone()`; sincronizza
   `<select>` ⇄ campo hidden `#zonaHidden` ⇄ marker SVG `#diagMarker`.
 - **J) Form (Formspree)** → `wireForm()`: `preventDefault`, honeypot, validazione
@@ -166,7 +169,9 @@ L'orchestrazione motion è dentro **`gsap.matchMedia()`** con condizioni
   `@media (hover: hover) and (pointer: fine)` + guardia JS `isDesktop`. Su touch
   resta il cursore di sistema e il comportamento standard.
 - **Niente scroll-trap su mobile:** il `pin` della sezione "Metodo" è creato solo su
-  desktop; su mobile/reduced-motion la colonna si raddrizza con un semplice reveal.
+  desktop. Su mobile la colonna è sottile e alta quanto il testo accanto e si raddrizza
+  con uno **scrub SENZA pin** (reversibile: scrollando su si ri-scompone). Con
+  reduced-motion resta dritta e ferma.
 - **Tastiera:** aree anatomia e zone del manichino sono `tabindex="0"` + `role="button"`
   + `aria-label`, attivabili con Invio/Spazio; focus sempre visibile (`:focus-visible`).
 - **Fallback `<select>` del manichino:** chi non usa l'SVG sceglie la zona dal menu;

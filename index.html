@@ -343,21 +343,18 @@
   .metodo__spine { display: grid; place-items: center; }
   .metodo__spine svg { width: clamp(160px, 24vw, 240px); height: auto; }
 
-  /* Mobile/tablet: colonna piccola e DI LATO al testo (sticky, così resta
-     visibile mentre scorri) invece che grande e sotto al testo. */
+  /* Mobile/tablet: colonna sottile e DI LATO al testo, alta quanto il testo
+     stesso (dimensioni dell'SVG impostate via JS). Niente sotto al testo. */
   @media (max-width: 880px) {
     .metodo__inner {
       grid-template-columns: 1fr 84px;
-      gap: 20px;
-      align-items: start;
+      gap: 22px;
+      align-items: stretch;   /* la colonna affianca tutta l'altezza del testo */
       min-height: auto;       /* niente 100vh: evita spazi vuoti su mobile */
     }
-    .metodo__spine {
-      position: sticky;
-      top: 88px;              /* resta sotto la navbar fissa */
-      align-self: start;
-    }
-    .metodo__spine svg { width: 84px; }   /* colonna rimpicciolita */
+    .metodo__spine { align-self: stretch; }
+    /* Fallback senza JS: l'SVG resta contenuto nella colonna */
+    .metodo__spine svg { width: 74px; height: auto; max-height: 100%; }
   }
   .spine-line { fill: none; stroke: var(--sage); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
   .vertebra { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
@@ -761,6 +758,7 @@
                   <option value="lombare">Zona Lombare</option>
                   <option value="ginocchio-destro">Ginocchio Destro</option>
                   <option value="ginocchio-sinistro">Ginocchio Sinistro</option>
+                  <option value="altro">Altro</option>
                 </select>
                 <p class="selected-zone" id="zonaReadout">Nessuna zona selezionata.</p>
               </div>
@@ -1037,6 +1035,7 @@
     function selectZone(value, label, zoneEl) {
       zoneEls.forEach(z => z.classList.remove('is-selected'));
       if (zoneEl) { zoneEl.classList.add('is-selected'); placeMarkerOnZone(zoneEl); }
+      else { marker.classList.remove('show', 'marker-pulse'); } // es. "Altro": nessun punto sul corpo
       zonaSelect.value = value;
       zonaHidden.value = label;            // <-- campo hidden popolato dal JS
       zonaReadout.innerHTML = value ? ('Zona selezionata: <strong>' + label + '</strong>') : 'Nessuna zona selezionata.';
@@ -1131,16 +1130,11 @@
        La curva e le vertebre derivano dalla STESSA formula, così il
        morph verso la versione dritta combacia perfettamente.
        ----------------------------------------------------------------- */
+    const spineSvg  = document.getElementById('spineSvg');
     const spineLine = document.getElementById('spineLine');
     const spineGroup= document.getElementById('spineVertebrae');
-    const N = 22, TOP = 40, BOTTOM = 580, CX = 120, AMP = 40;
-    const pts = [];
-    for (let i = 0; i < N; i++) {
-      const t = i / (N - 1);
-      const y = TOP + t * (BOTTOM - TOP);
-      const x = CX + Math.sin(t * Math.PI * 1.5) * AMP; // curva tipo "scoliosi"
-      pts.push({ x, y, t });
-    }
+    const SVGNS = 'http://www.w3.org/2000/svg';
+
     // Path morbido (quadratiche tra i punti medi) — stesso schema per curvo e dritto
     function smoothPath(points) {
       let d = 'M ' + points[0].x.toFixed(1) + ' ' + points[0].y.toFixed(1);
@@ -1153,25 +1147,45 @@
       d += ' L ' + last.x.toFixed(1) + ' ' + last.y.toFixed(1);
       return d;
     }
-    const curvedD   = smoothPath(pts);
-    const straightD = smoothPath(pts.map(p => ({ x: CX, y: p.y }))); // stesso numero di comandi
-    spineLine.setAttribute('d', curvedD); // stato iniziale: curvo
 
-    // Vertebre: una ellisse per punto, traslata sull'offset della curva
-    const SVGNS = 'http://www.w3.org/2000/svg';
-    const vertebrae = [];
-    pts.forEach((p, i) => {
-      if (i % 1 !== 0) return;
-      const v = document.createElementNS(SVGNS, 'ellipse');
-      v.setAttribute('cx', CX);
-      v.setAttribute('cy', p.y.toFixed(1));
-      v.setAttribute('rx', 13);
-      v.setAttribute('ry', 8);
-      v.setAttribute('class', 'vertebra');
-      v.dataset.offset = (p.x - CX).toFixed(2); // quanto è "storta" rispetto al centro
-      spineGroup.appendChild(v);
-      vertebrae.push(v);
-    });
+    // Costruisce la colonna (tracciato + vertebre) per le dimensioni date e
+    // restituisce la geometria. Usata con misure diverse su desktop e mobile.
+    // Curva e vertebre nascono dalla STESSA formula → il morph verso la
+    // versione dritta combacia perfettamente.
+    function buildSpine(o) {
+      spineSvg.setAttribute('viewBox', '0 0 ' + o.vbW + ' ' + o.vbH);
+      const pts = [];
+      for (let i = 0; i < o.count; i++) {
+        const t = i / (o.count - 1);
+        const y = o.top + t * (o.bottom - o.top);
+        const x = o.cx + Math.sin(t * Math.PI * o.waves) * o.amp; // curva tipo "scoliosi"
+        pts.push({ x, y });
+      }
+      const curvedD   = smoothPath(pts);
+      const straightD = smoothPath(pts.map(p => ({ x: o.cx, y: p.y }))); // stesso n. di comandi
+      spineLine.setAttribute('d', curvedD); // stato iniziale: curvo
+      // (ri)creo le vertebre — una ellisse per punto, traslata sull'offset
+      spineGroup.innerHTML = '';
+      const vertebrae = [];
+      pts.forEach((p) => {
+        const v = document.createElementNS(SVGNS, 'ellipse');
+        v.setAttribute('cx', o.cx);
+        v.setAttribute('cy', p.y.toFixed(1));
+        v.setAttribute('rx', o.rx);
+        v.setAttribute('ry', o.ry);
+        v.setAttribute('class', 'vertebra');
+        v.dataset.offset = (p.x - o.cx).toFixed(2); // quanto è "storta" rispetto al centro
+        spineGroup.appendChild(v);
+        vertebrae.push(v);
+      });
+      return { pts, cx: o.cx, curvedD, straightD, vertebrae };
+    }
+
+    // Misure desktop (colonna grande, a fianco del testo, pin+scrub)
+    const SPINE_DESKTOP = { vbW: 240, vbH: 620, top: 40, bottom: 580, cx: 120, amp: 40, count: 22, rx: 13, ry: 8, waves: 1.5 };
+    // Costruzione iniziale: garantisce qualcosa di disegnato subito e serve al
+    // fallback senza GSAP. Viene rifatta su misura dentro matchMedia.
+    let spine = buildSpine(SPINE_DESKTOP);
 
     /* =================================================================
        ====================  DA QUI IN POI: GSAP  ======================
@@ -1181,7 +1195,7 @@
       console.warn('[GSAP] non disponibile: la pagina resta pienamente usabile senza animazioni.');
       document.documentElement.classList.remove('js'); // mostra tutti gli elementi .reveal
       // Posiziona comunque le vertebre curve come illustrazione statica
-      vertebrae.forEach(v => v.setAttribute('transform', 'translate(' + v.dataset.offset + ',0)'));
+      spine.vertebrae.forEach(v => v.setAttribute('transform', 'translate(' + v.dataset.offset + ',0)'));
       return;
     }
 
@@ -1190,8 +1204,8 @@
     const hasMorph = !!window.MorphSVGPlugin;
     if (hasMorph) gsap.registerPlugin(window.MorphSVGPlugin);
 
-    // Stato iniziale vertebre (curve) via transform GSAP
-    gsap.set(vertebrae, { x: (i, t) => parseFloat(t.dataset.offset), transformOrigin: '50% 50%' });
+    // (lo stato iniziale "storto" delle vertebre è impostato dentro matchMedia,
+    //  dopo aver scelto la geometria giusta per desktop/mobile)
 
     // A) NAVBAR opaca allo scroll — gestita da ScrollTrigger
     window.ScrollTrigger.create({
@@ -1257,58 +1271,67 @@
       }
 
       /* H-bis) SCROLLYTELLING COLONNA.
-         Desktop (no reduced-motion): sezione "pinnata" + scrub; la colonna
-         si raddrizza (MorphSVG sul tracciato + vertebre che rientrano).
-         Mobile / reduced-motion: NESSUN pin (no scroll-trap) → resta una
-         semplice illustrazione, raddrizzata dolcemente al passaggio. */
+         La colonna nasce STORTA e si raddrizza con lo scroll (scrub): tornando
+         indietro si ri-scompone. Desktop: grande e "pinnata". Mobile: sottile e
+         alta quanto il testo accanto, scorre SENZA pin (nessuno scroll-trap).
+         Con reduced-motion resta dritta e ferma. */
       const metodo = document.getElementById('metodo');
       const inner  = metodo.querySelector('.metodo__inner');
-      const spineWrap = metodo.querySelector('.metodo__spine');
+      const textCol = inner.querySelector('div');   // colonna di testo (1° figlio)
 
-      if (isDesktop && !reduceMotion) {
-        metodo.classList.add('metodo--pinned');
-        const spineTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: metodo,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1,
-            pin: inner,
-            anticipatePin: 1
-          }
-        });
-        // Tracciato: morph curvo → dritto (se il plugin è presente)
+      // 1) Geometria su misura per il formato corrente
+      if (isDesktop) {
+        spineSvg.style.width = ''; spineSvg.style.height = '';
+        spineSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        spine = buildSpine(SPINE_DESKTOP);
+      } else {
+        // Mobile: SVG sottile e ALTO quanto la colonna di testo accanto.
+        // viewBox in pixel reali ⇒ nessuna deformazione delle vertebre.
+        const colH = Math.max(360, Math.round(textCol.getBoundingClientRect().height));
+        const w = 74;
+        spineSvg.style.width = w + 'px';
+        spineSvg.style.height = colH + 'px';
+        spineSvg.setAttribute('preserveAspectRatio', 'none');
+        spine = buildSpine({ vbW: w, vbH: colH, top: 16, bottom: colH - 16, cx: w / 2,
+                             amp: 14, count: Math.max(14, Math.round(colH / 30)), rx: 9, ry: 5, waves: 3 });
+      }
+      // Stato iniziale: colonna STORTA
+      gsap.set(spine.vertebrae, { x: (i, t) => parseFloat(t.dataset.offset), transformOrigin: '50% 50%' });
+
+      // 2) "Raddrizzamento": aggiunge a una timeline morph del tracciato +
+      //    rientro delle vertebre sull'asse (riusato da desktop e mobile).
+      const straighten = (tl) => {
         if (hasMorph) {
-          spineTl.to(spineLine, { morphSVG: straightD, ease: 'none' }, 0);
+          tl.to(spineLine, { morphSVG: spine.straightD, ease: 'none' }, 0);
         } else {
           // Fallback senza MorphSVG: interpolo manualmente il path
-          const proxy = { p: 0 };
-          spineTl.to(proxy, {
-            p: 1, ease: 'none',
-            onUpdate: () => {
-              const d = pts.map((pt) => ({ x: pt.x + (CX - pt.x) * proxy.p, y: pt.y }));
-              spineLine.setAttribute('d', smoothPath(d));
-            }
-          }, 0);
+          tl.to({ p: 0 }, { p: 1, ease: 'none',
+            onUpdate: function () {
+              const pr = this.targets()[0].p;
+              spineLine.setAttribute('d', smoothPath(spine.pts.map(pt => ({ x: pt.x + (spine.cx - pt.x) * pr, y: pt.y }))));
+            } }, 0);
         }
-        // Vertebre: rientrano sull'asse con un leggero stagger
-        spineTl.to(vertebrae, { x: 0, ease: 'none', stagger: { each: .015 } }, 0);
-        // Cleanup quando la media query cambia (tolgo il pin → niente scroll-trap)
+        tl.to(spine.vertebrae, { x: 0, ease: 'none', stagger: { each: spine.vertebrae.length > 26 ? .008 : .015 } }, 0);
+      };
+
+      // 3) Aggancio allo scroll
+      if (reduceMotion) {
+        // Niente movimento: colonna dritta e ferma
+        if (hasMorph) gsap.set(spineLine, { morphSVG: spine.straightD }); else spineLine.setAttribute('d', spine.straightD);
+        gsap.set(spine.vertebrae, { x: 0 });
+      } else if (isDesktop) {
+        // Desktop: sezione pinnata + scrub (reversibile)
+        metodo.classList.add('metodo--pinned');
+        straighten(gsap.timeline({
+          scrollTrigger: { trigger: metodo, start: 'top top', end: 'bottom bottom', scrub: 1, pin: inner, anticipatePin: 1 }
+        }));
         cleanups.push(() => { metodo.classList.remove('metodo--pinned'); });
       } else {
-        // Versione non bloccante: raddrizzo la colonna con un semplice reveal
-        if (reduceMotion) {
-          if (hasMorph) gsap.set(spineLine, { morphSVG: straightD }); else spineLine.setAttribute('d', straightD);
-          gsap.set(vertebrae, { x: 0 });
-        } else {
-          // Trigger sulla COLONNA (non sull'intera sezione): così l'animazione
-          // parte quando la colonna entra davvero in vista e si vede curva→dritta.
-          const t2 = gsap.timeline({ scrollTrigger: { trigger: spineWrap, start: 'top 80%', once: true } });
-          if (hasMorph) t2.to(spineLine, { morphSVG: straightD, duration: 1.1, ease: 'power2.inOut' }, 0);
-          else t2.to({ p: 0 }, { p: 1, duration: 1.1, ease: 'power2.inOut',
-            onUpdate: function () { const pr = this.targets()[0].p; spineLine.setAttribute('d', smoothPath(pts.map(pt => ({ x: pt.x + (CX - pt.x) * pr, y: pt.y })))); } }, 0);
-          t2.to(vertebrae, { x: 0, duration: 1.1, ease: 'power2.inOut', stagger: { each: .02 } }, 0);
-        }
+        // Mobile: scrub SENZA pin → si raddrizza scrollando giù e si
+        // RI-SCOMPONE tornando su. Nessun blocco verticale.
+        straighten(gsap.timeline({
+          scrollTrigger: { trigger: metodo, start: 'top 78%', end: 'bottom 55%', scrub: true }
+        }));
       }
 
       /* ============================================================
